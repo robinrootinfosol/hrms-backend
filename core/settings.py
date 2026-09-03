@@ -46,6 +46,7 @@ DJANGO_APPS = [
 ]
 THIRD_PARTY_APPS =[
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
@@ -95,12 +96,18 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'HRMS Backend API',
-    'DESCRIPTION': 'HRMS API documentation and interactive testing',
+    'DESCRIPTION': 'Modular Enterprise HRMS Backend Documentation',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    'SWAGGER_UI_DIST': 'SIDECAR',
-    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
-    'REDOC_DIST': 'SIDECAR',
+    'SECURITY': [{'tokenAuth': []}],
+    'SECURITY_DEFINITIONS': {
+        'tokenAuth': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description': 'Enter as: Token <your_40_char_token>',
+        }
+    },
 }
 
 
@@ -167,13 +174,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
-    'EXCEPTION_HANDLER': 'common.exceptions.custom_exception_handler',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'EXCEPTION_HANDLER': 'common.exceptions.custom_exception_handler',
 }
 
 

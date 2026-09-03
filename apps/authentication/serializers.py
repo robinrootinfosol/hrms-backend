@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from authentication.utils import account_activation_token
@@ -8,36 +9,34 @@ User = get_user_model()
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
-    password = serializers.CharField(write_only=True, required =True)
+    password = serializers.CharField(write_only=True, required=True)
 
-    def validate(self,attrs):
+    def validate(self, attrs):
         email = attrs.get('email', '').lower().strip()
         password = attrs.get('password')
 
         user = User.objects.filter(email=email).first()
 
         if not user:
-            raise serializers.ValidationError("Invalid email or password")
+            raise serializers.ValidationError("Invalid email or password.")
 
         if not user.is_active:
-            raise serializers.ValidationError("The account has been deactivated. Please contact HR")
+            raise serializers.ValidationError("This account has been deactivated. Please contact HR.")
 
-        if not user.has_usable_password or user.is_first_login:
-            raise serializers.ValidationError("You have not set the password yet. Please check your email to set password")
+        if not user.has_usable_password() or user.is_first_login:
+            raise serializers.ValidationError(
+                "You have not set your account password yet. Please check your email to set your password before logging in."
+            )
+
         if not user.check_password(password):
-            raise serializers.ValidationError("Invalid email or password")
+            raise serializers.ValidationError("Invalid email or password.")
 
-        refresh = RefreshToken.for_user(user)
-
-        refresh['email'] = user.email
-        refresh['role'] = user.role
-        refresh['employee_id'] = user.employee_id
+        # Create or retrieve the 40-character token
+        token, _ = Token.objects.get_or_create(user=user)
 
         return {
-            'token':{
-                'refresh': str(refresh),
-                'access': str(refresh.access_token)
-            },
+            'success':True,
+            'token': token.key,
             'user': {
                 'id': str(user.id),
                 'employee_id': user.employee_id,

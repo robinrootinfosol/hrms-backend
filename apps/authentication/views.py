@@ -1,5 +1,6 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema
@@ -94,9 +95,9 @@ class ForgetPasswordView(generics.GenericAPIView):
 class RequestPasswordResetAPIView(generics.GenericAPIView):
     """
     Authenticated Reset Password Request:
-    Identifies the user from the Bearer JWT token in the Authorization header
-    and sends a password reset link to their email.
+    Reads user identity from the 'Token <key>' header and emails a reset link.
     """
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = PasswordResetResponseSerializer
 
